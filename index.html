@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"
+          integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn"
+          crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js" 
+          integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+          crossorigin="anonymous"></script>
+    <title>Задание 1</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Задание 1</h1>
+        <form action="" enctype="multipart/form-data" method="post" onsubmit="return callWriteFiles(this);">
+            <div class="form-group">
+                <label for="username">Имя*</label>
+                <input type="text" class="form-control" name="username" id="username" placeholder="Введите имя" required>
+            </div>
+            <div class="form-group">
+                <label for="usermail">E-mail*</label>
+                <!-- type="email" не поддерживает кириллицу -->
+                <input type="text" class="form-control" name="usermail" id="usermail" placeholder="Введите адрес электронной почты" required>
+            </div>
+            <div class="form-group">
+                <label for="message">Сообщение*</label>
+                <textarea class="form-control" rows="3" name="message" id="message" placeholder="Введите сообщение"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="image">Изображение (*.jpg, *.png), не более 60Мб</label>
+                <input type="file" class="form-control" name="image" id="image">
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg">Запись в файл</button>	
+        </form>
+    </div>
+
+<script>
+    function callWriteFiles(myForm) {
+    let myFormData = new FormData();
+    //Регулярка учитывает русские символы. Длиннее 80 символов, но разрывать нецелесообразно 
+    let reg = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+    let fileName, fileExtention;
+        //Проверка заполнения полей
+        if (myForm.username.value == "" || myForm.usermail.value == "" || myForm.message.value == "") { 
+            alert("Необходимо заполнить все обязательные поля");
+            return false; 
+        }
+        //Проверка адреса электронной почты
+        if (reg.test(myForm.usermail.value) == false) {
+            alert("Неверный адрес электронной почты!");
+            return false; 
+        }
+        //Проверка наличия файла
+        if (jQuery('#image').val()) {
+            //Проверка по расширению, с учетом, что иногда оно бывает в верхнем регистре
+            fileName = $('#image')[0].files[0].name.toLowerCase();
+            fileExtention = fileName.split('.').reverse()[0];
+            //Файл *.jpeg считается неверным, потому что так в техзадании
+            if (fileExtention == "png" || fileExtention == "jpg") {
+                //Добавляем файл в данные формы для передачи
+                myFormData.append('image', $('#image')[0].files[0]);
+            } else {
+                //Если расширение неверное, просто отрицательный ответ
+                alert("Неверное расширение файла!");
+                return false;
+                }
+        }
+        //Заполняем остальные поля
+        myFormData.append('username', $('#username').val());
+        myFormData.append('usermail', $('#usermail').val());
+        myFormData.append('message', $('#message').val());
+        //AJAX
+        $.ajax({
+            type: 'POST',
+            url: 'writefiles.php',
+            cache: false,
+            contentType: false,
+            processData: false,
+            data: myFormData,
+            dataType: 'json',
+            success: function(msg) {
+                if (msg.ok == 'Y') {
+                    alert("Все прошло успешно!");
+                } else {
+                    alert("Произошла ошибка!");
+                }
+            }
+        });
+        return false;
+    }
+</script>
+</body>
+</html>
