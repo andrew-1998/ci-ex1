@@ -1,0 +1,3 @@
+Просто SQL запрос для 4 задания:
+SELECT user.id, user.firstName, user.lastName, city.city FROM user
+    LEFT JOIN city ON user.city=city.id;
